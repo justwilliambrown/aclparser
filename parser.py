@@ -2,41 +2,66 @@
 # To calculate the score, multiply the kills by 10, then subtract from that deaths * 4
 from parse import *
 import sqlite3
+import math
+
 record = True
 stats = {}
 game_stats = {}
 killmsg = ["busted", "picked off", "peppered", "sprayed", "punctured", "shredded", "slashed", "splattered", "headshot", "gibbed"]
+
 def kill_count(name, method, tk):
     if record == True:
         global game_stats
         global stats
         multiplier = 1
         if name not in stats:
-            stats[name] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0)
+            stats[name] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0, ratio = 0, score = 0)
         if name not in game_stats:
-            game_stats[name] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0)
+            game_stats[name] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0, ratio = 0, score = 0)
         if method in ("slashed", "headshot"):
             multiplier += 1
         if tk == True:
             multiplier = -1
         game_stats[name]['kills'] += multiplier
         stats[name]['kills'] += multiplier
+        #Check to see if it was a headshot.
         if method == "headshot":
             game_stats[name]['headshots'] += 1
             stats[name]['headshots'] += 1
-        #print(game_stats)
+        #Update the ratio
+        if game_stats[name]["deaths"] == 0:
+            stats[name]["ratio"] = stats[name]["kills"] / (stats[name]["deaths"] + 1)
+            game_stats[name]["ratio"] = game_stats[name]["kills"] / (game_stats[name]["deaths"] + 1)
+        else:
+            stats[name]["ratio"] = stats[name]["kills"] / (stats[name]["deaths"])
+            game_stats[name]["ratio"] = game_stats[name]["kills"] / (game_stats[name]["deaths"])
+        #Set his score
+        stats[name]["score"] = (stats[name]["kills"] * 10) - (stats[name]["deaths"] * 4)
+        game_stats[name]["score"] = (game_stats[name]["kills"] * 10) - (game_stats[name]["deaths"] * 4)
+
 def death_count(killed):
     if record == True:
         #print(killed, "was recognised as killed")
         global game_stats
         global stats
         if killed not in game_stats:
-            game_stats[killed] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0)
+            game_stats[killed] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0, ratio = 0, score = 0)
         game_stats[killed]["deaths"] += 1
         if killed not in stats:
-            stats[killed] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0)
+            stats[killed] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0, ratio = 0, score = 0)
         stats[killed]["deaths"] += 1
+        # Update the ratio
+        if game_stats[killed]["deaths"] == 0:
+            stats[killed]["ratio"] = '%.2f' %(stats[killed]["kills"] / (stats[killed]["deaths"] + 1))
+            game_stats[killed]["ratio"] = '%.2f' % (game_stats[killed]["kills"] / (game_stats[killed]["deaths"] + 1))
+        else:
+            stats[killed]["ratio"] = '%.2f' % (stats[killed]["kills"] / (stats[killed]["deaths"]))
+            game_stats[killed]["ratio"] = '%.2f' % (game_stats[killed]["kills"] / (game_stats[killed]["deaths"]))
+        #Update the score
+        stats[killed]["score"] = (stats[killed]["kills"] * 10) - (stats[killed]["deaths"] * 4)
+        game_stats[killed]["score"] = (game_stats[killed]["kills"] * 10) - (game_stats[killed]["deaths"] * 4)
         #print(game_stats)
+
 def flag_count(data):
     if record == True:
         #print("Got to here")
@@ -48,6 +73,7 @@ def flag_count(data):
         stats[scorer]['flags'] += 1
         game_stats[scorer]['flags'] += 1
         #print(game_stats)
+
 def flag_returns(returner):
     if record == True:
         if returner not in game_stats:
@@ -55,6 +81,7 @@ def flag_returns(returner):
         if returner not in stats:
             stats[returner] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0)
         #game_stats[returner]['returns'] += 1
+
 def output(p, game_stats):
     game_info = "This was a game of", p['mode'], "on", p['map']
     game_info = ' '.join(game_info)
@@ -109,7 +136,7 @@ while True:
         returner = data[1]
         #print("Someone Returned")
         flag_returns(returner)
-    
+
     #This makes sure that people saying this doesn't trip up the code.
     #if len(data) not in (4, 5, 6) or data[2] not in killmsg and "".join(data[2:4]) not in killmsg:
     #   print(data[2:4])
