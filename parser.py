@@ -1,13 +1,21 @@
 #Written by Padfoot. Leave this line here. Python3
 # To calculate the score, multiply the kills by 10, then subtract from that deaths * 4
 from parse import *
-import sqlite3
+#import mysql.connector
 import math
 
+#Variable Stuff
 record = True
 stats = {}
 game_stats = {}
+game_count = 1
 killmsg = ["busted", "picked off", "peppered", "sprayed", "punctured", "shredded", "slashed", "splattered", "headshot", "gibbed"]
+ID = 0
+
+#Setting up db
+#cnx = mysql.connector.connect(user='access', database='ac_stats', password='0123')
+#pointer = cnx.cursor()
+
 
 def kill_count(name, method, tk):
     if record == True:
@@ -30,11 +38,11 @@ def kill_count(name, method, tk):
             stats[name]['headshots'] += 1
         #Update the ratio
         if game_stats[name]["deaths"] == 0:
-            stats[name]["ratio"] = stats[name]["kills"] / (stats[name]["deaths"] + 1)
-            game_stats[name]["ratio"] = game_stats[name]["kills"] / (game_stats[name]["deaths"] + 1)
+            stats[name]["ratio"] = '%.2f' % (stats[name]["kills"] / (stats[name]["deaths"] + 1))
+            game_stats[name]["ratio"] = '%.2f' % (game_stats[name]["kills"] / (game_stats[name]["deaths"] + 1))
         else:
             stats[name]["ratio"] = stats[name]["kills"] / (stats[name]["deaths"])
-            game_stats[name]["ratio"] = game_stats[name]["kills"] / (game_stats[name]["deaths"])
+            game_stats[name]["ratio"] = '%.2f' % (game_stats[name]["kills"] / (game_stats[name]["deaths"]))
         #Set his score
         stats[name]["score"] = (stats[name]["kills"] * 10) - (stats[name]["deaths"] * 4)
         game_stats[name]["score"] = (game_stats[name]["kills"] * 10) - (game_stats[name]["deaths"] * 4)
@@ -83,12 +91,33 @@ def flag_returns(returner):
         #game_stats[returner]['returns'] += 1
 
 def output(p, game_stats):
-    game_info = "This was a game of", p['mode'], "on", p['map']
-    game_info = ' '.join(game_info)
-    i = len(game_stats) -1
-    print(game_info)
-    print(game_stats, '\n')
+    global game_count
+    game_stats['map'] = p['map']
+    game_stats["mode"] = p["mode"]
+    #print(game_info)
+    #print(game_stats, '\n')
 
+
+    query = ("Insert Into %s %s "
+            "values %s")
+    #Setup the mode and the map with the gamenum
+    print(query % ('game_info', 'map', p['map']))
+    print(query % ('game_info', 'mode', p['mode']))
+
+    for i in game_stats:
+        if i in ['map', 'mode', 'gamenum']:
+            #pointer.execute(query, i, i[l]
+            pass
+        else:
+            game_stats[i]["gamenum"] = game_count
+            game_stats[i]['ID'] = ID
+            
+            print(query % ('games', 'name', i))
+            for l in game_stats[i]:
+                    #pointer.execute(query, (i, l))
+                    print(query % ('games', l, game_stats[i][l]))
+    game_count += 1
+    print("---------------------------------------------------------------------")
 while True:
     try:
         a = input()
@@ -102,10 +131,6 @@ while True:
     except IndexError:
         continue
     #print(data)
-    if len(data) == 4 and data[2] == 'says:' and data[3] == "'.record_start'":
-        record = True
-    if len(data) == 4 and data[2] == 'says:' and data[3] == "'.record_stop'":
-        record = False
 
     #Find the information from the map start bit.
     # Game start: deathmatch on ac_douze, 1 players, 8 minutes, mastermode 0, (map rev 19/5707, official, 'getmap' not prepared)
