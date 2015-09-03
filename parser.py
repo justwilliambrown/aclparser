@@ -1,7 +1,7 @@
 #Written by Padfoot. Leave this line here. Python3
 # To calculate the score, multiply the kills by 10, then subtract from that deaths * 4
 from parse import *
-#import mysql.connector
+import mysql.connector
 import math
 
 #Variable Stuff
@@ -13,8 +13,8 @@ killmsg = ["busted", "picked off", "peppered", "sprayed", "punctured", "shredded
 ID = 0
 
 #Setting up db
-#cnx = mysql.connector.connect(user='access', database='ac_stats', password='0123')
-#pointer = cnx.cursor()
+cnx = mysql.connector.connect(user='access', database='ac_stats', password='0123')
+pointer = cnx.cursor()
 
 
 def kill_count(name, method, tk):
@@ -92,6 +92,7 @@ def flag_returns(returner):
 
 def output(p, game_stats):
     global game_count
+    global ID
     game_stats['map'] = p['map']
     game_stats["mode"] = p["mode"]
     #print(game_info)
@@ -101,8 +102,8 @@ def output(p, game_stats):
     query = ("Insert Into %s %s "
             "values %s")
     #Setup the mode and the map with the gamenum
-    print(query % ('game_info', 'map', p['map']))
-    print(query % ('game_info', 'mode', p['mode']))
+    pointer.execute(query % ('game_info', 'map', p['map']))
+    pointer.execute(query % ('game_info', 'mode', p['mode']))
 
     for i in game_stats:
         if i in ['map', 'mode', 'gamenum']:
@@ -111,13 +112,14 @@ def output(p, game_stats):
         else:
             game_stats[i]["gamenum"] = game_count
             game_stats[i]['ID'] = ID
-            
-            print(query % ('games', 'name', i))
+            ID += 1
+
+            pointer.execute(query % ('games', 'name', i))
             for l in game_stats[i]:
                     #pointer.execute(query, (i, l))
-                    print(query % ('games', l, game_stats[i][l]))
+                    pointer.execute(query % ('games', l, game_stats[i][l]))
     game_count += 1
-    print("---------------------------------------------------------------------")
+    #print("---------------------------------------------------------------------")
 while True:
     try:
         a = input()
