@@ -3,7 +3,13 @@ echo "<html>";
 echo "<head><title> AssaultCube Logging </title></head>";
 echo "<body>";
 echo "<link rel=shortcut icon href=/stats/favicon.ico />";
-
+echo "<center>";
+echo "Take a survey on the application <a href=https://www.surveymonkey.com/r/YNHMM2R>here</a>";
+echo "<br>";
+echo "<img src='title.png' align=center>";
+echo "<br>";
+echo "<br>";
+echo "<br>";
 //connect to the SQL server
 $connection = mysql_connect('localhost', 'access', '0123'); //The Blank string is the password
 mysql_select_db('ac_stats');
@@ -16,7 +22,7 @@ $game_id = 1;
 // echo "<input type=submit value=Submit>";
 // echo "</form>";
 
-$game_id = $_POST["game"];
+$game_id = $_GET["game"];
 
 //Print the basic information about the game
 $gmquery = "SELECT * FROM game_info WHERE ID=$game_id";
@@ -46,4 +52,5 @@ echo "<tr><td>" . $row['name'] . "</td><td>" . $row['headshots'] . "</td><td>" .
 }
 echo "</table>";
 mysql_close(); //Make sure to close out the database connection
+echo "</center>";
 ?>
