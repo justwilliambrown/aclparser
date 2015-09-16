@@ -25,7 +25,7 @@ $game_id = 1;
 //TODO Implement a search
 
 //Print the basic information about the game
-$gmquery = "SELECT * FROM game_info";
+$gmquery = "SELECT * FROM game_info ORDER BY ID DESC";
 $res = mysql_query($gmquery);
 while($grow = mysql_fetch_array($res)){
   echo "<a href=view.php?game=" . $grow["ID"] . ">";

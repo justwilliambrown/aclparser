@@ -90,7 +90,7 @@ def flag_returns(returner):
             game_stats[returner] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0)
         if returner not in stats:
             stats[returner] = dict(kills = 0, deaths = 0, flags = 0, returns = 0, headshots = 0)
-        #game_stats[returner]['returns'] += 1
+        game_stats[returner]['returns'] += 1
 
 #This function does all of the outputting into the database.
 def output(p, game_stats):
@@ -130,6 +130,7 @@ def output(p, game_stats):
                     # pointer.execute(query % ('games', l, game_stats[i][l]))
     game_count += 1
     cnx.commit()
+
 while True:
     try:
         a = input()
